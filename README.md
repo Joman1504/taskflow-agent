@@ -1,5 +1,4 @@
-# TaskFlow Agent
-# Project for CS4680
+# TaskFlow Agent - Project for CS4680
 
 **Dual-Stream Semantic Synthesis System**  
 Transforms raw meeting and lecture transcripts into narrative notes and structured action items using an LLM pipeline.
