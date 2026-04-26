@@ -2,13 +2,14 @@
 # This contains all of our Pydantic models
 from pydantic import BaseModel, Field
 
+
 # ── Request ──────────────────────────────────────────────────────────────────
 
 class TranscriptRequest(BaseModel):
     transcript: str = Field(..., description="Raw meeting or lecture transcript text.")
 
-# ── Stream 2: Tactical Checklist ─────────────────────────────────────────────
 
+# ── Stream 2: Tactical Checklist ─────────────────────────────────────────────
 
 class ActionItem(BaseModel):
     who: str = Field(..., description="Speaker or assignee responsible for the task.")

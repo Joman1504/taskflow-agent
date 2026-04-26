@@ -1,4 +1,4 @@
-# TaskFlow Agent - Project for CS4680
+# TaskFlow Agent
 
 **Dual-Stream Semantic Synthesis System**  
 Transforms raw meeting and lecture transcripts into narrative notes and structured action items using an LLM pipeline.
@@ -13,18 +13,20 @@ taskflow_agent/
 ├── requirements.txt
 ├── .env.example                # Copy to .env and fill in your keys
 ├── .gitignore
-└── app/
-    ├── __init__.py             # FastAPI app factory & router registration
-    ├── core/
-    │   └── config.py           # Pydantic-settings config (reads .env)
-    ├── models/
-    │   └── schemas.py          # Pydantic request/response models
-    ├── services/
-    │   ├── llm_client.py       # Async OpenAI wrapper
-    │   └── pipeline.py         # Dual-stream pipeline orchestration
-    └── api/
-        └── routes/
-            └── transcripts.py  # POST /api/v1/transcripts/analyze
+├── app/
+│   ├── __init__.py             # FastAPI app factory & router registration
+│   ├── core/
+│   │   └── config.py           # Pydantic-settings config (reads .env)
+│   ├── models/
+│   │   └── schemas.py          # Pydantic request/response models
+│   ├── services/
+│   │   ├── llm_client.py       # Async OpenAI wrapper
+│   │   └── pipeline.py         # Dual-stream pipeline orchestration
+│   └── api/
+│       └── routes/
+│           └── transcripts.py  # POST /api/v1/transcripts/analyze
+└── frontend/
+    └── index.html              # GUI for the agent
 ```
 
 ---
@@ -41,10 +43,11 @@ pip install -r requirements.txt
 
 # 3. Configure environment
 cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY and OPENAI_MODEL
+# Edit .env and add your OPENAI_API_KEY
 
 # 4. Run the server
 python main.py
+# Open http://localhost:8000 OR
 # API docs available at http://localhost:8000/docs
 ```
 
