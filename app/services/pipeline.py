@@ -17,13 +17,14 @@ Do not include action items — focus solely on summarising what was discussed.
 
 _TACTICAL_SYSTEM = """
 You are an expert at extracting commitments from transcripts. Given a raw transcript,
-identify every firm action item where someone explicitly commits to doing something.
-Ignore suggestions, hypotheticals, and vague statements like "we should".
+identify every firm action item where someone explicitly commits to doing something
+or is assigned to do something. Ignore suggestions, hypotheticals, and vague statements
+like "we should".
 
 Return ONLY a valid JSON array with this exact structure — no extra text:
 [
-  {"who": "<person or role>", "what": "<task description>", "when": "<deadline or null>"},
-  ...
+    {"who": "<person or role>", "what": "<task description>", "when": "<deadline or null>"},
+    ...
 ]
 
 Rules:
