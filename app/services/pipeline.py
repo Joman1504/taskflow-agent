@@ -10,7 +10,7 @@ from app.models.schemas import ActionItem, DualStreamResponse
 
 _NARRATIVE_SYSTEM = """
 You are an expert meeting analyst. Given a raw transcript, produce a concise
-narrative summary (3-5 short paragraphs) that captures the core themes, key
+narrative summary (1-3 short paragraphs) that captures the core themes, key
 decisions, and important discussion points. Write in clear, professional prose.
 Do not include action items — focus solely on summarising what was discussed.
 """.strip()
@@ -30,7 +30,7 @@ Return ONLY a valid JSON array with this exact structure — no extra text:
 Rules:
 - "who" must be the speaker or the assignee, not a team or organisation name.
 - "when" is null if no deadline or timeframe was mentioned.
-- Only include items with a clear commitment verb (will, going to, I'll, need to, etc.).
+- Only include items with a clear commitment verb (will, going to, I'll, need to, you have to, etc.).
 """.strip()
 
 

@@ -290,6 +290,47 @@
       display: none;
     }
     .error-bar.visible { display: block; }
+
+    /* ── Secondary button (Upload / Download) ── */
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 1.25rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: border-color 0.15s, color 0.15s, transform 0.1s;
+    }
+    .btn-secondary:hover  { border-color: var(--accent); color: var(--accent); }
+    .btn-secondary:active { transform: scale(0.97); }
+
+    .input-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+    /* ── Download bar ── */
+    .download-bar {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1.25rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .download-bar.visible { display: flex; }
+    .download-bar > span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -309,6 +350,7 @@
   <!-- Input -->
   <div class="input-panel">
     <div class="panel-label">Transcript Input</div>
+    <input type="file" id="file-upload" accept=".txt,.md,.text" style="display:none">
     <textarea
       id="transcript"
       placeholder="Paste your meeting or lecture transcript here…"
@@ -316,10 +358,19 @@
     ></textarea>
     <div class="input-footer">
       <span id="char-count">0 characters</span>
-      <button id="analyze-btn" class="idle" onclick="analyze()">
-        <div class="spinner"></div>
-        <span class="btn-text"></span>
-      </button>
+      <div class="input-actions">
+        <button class="btn-secondary" onclick="document.getElementById('file-upload').click()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Upload File
+        </button>
+        <button id="analyze-btn" class="idle" onclick="analyze()">
+          <div class="spinner"></div>
+          <span class="btn-text"></span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -359,19 +410,63 @@
     </div>
   </div>
 
+  <!-- Download bar -->
+  <div class="download-bar" id="download-bar">
+    <span id="download-label">Analysis complete — results ready to export.</span>
+    <button class="btn-secondary" onclick="downloadJSON()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download JSON
+    </button>
+  </div>
+
 </main>
 
 <script>
-  const textarea   = document.getElementById('transcript');
-  const charCount  = document.getElementById('char-count');
-  const btn        = document.getElementById('analyze-btn');
-  const errorBar   = document.getElementById('error-bar');
+  const textarea    = document.getElementById('transcript');
+  const charCount   = document.getElementById('char-count');
+  const btn         = document.getElementById('analyze-btn');
+  const errorBar    = document.getElementById('error-bar');
+  const fileInput   = document.getElementById('file-upload');
+  const downloadBar = document.getElementById('download-bar');
+
+  let lastResult = null;
 
   // Live character count
   textarea.addEventListener('input', () => {
     const n = textarea.value.length;
     charCount.textContent = `${n.toLocaleString()} character${n !== 1 ? 's' : ''}`;
   });
+
+  // File upload handler
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      textarea.value = e.target.result;
+      const n = textarea.value.length;
+      charCount.textContent = `${n.toLocaleString()} character${n !== 1 ? 's' : ''}`;
+      clearError();
+    };
+    reader.onerror = () => showError('Could not read the file.');
+    reader.readAsText(file);
+    fileInput.value = '';
+  });
+
+  function downloadJSON() {
+    if (!lastResult) return;
+    const json = JSON.stringify(lastResult, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'taskflow-results.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function setLoading(on) {
     btn.disabled = on;
@@ -431,8 +526,10 @@
       }
 
       const data = await res.json();
+      lastResult = data;
       renderNarrative(data.narrative_notes);
       renderActions(data.action_items);
+      downloadBar.classList.add('visible');
     } catch (err) {
       showError(err.message || 'An unexpected error occurred.');
     } finally {
