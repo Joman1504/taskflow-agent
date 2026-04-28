@@ -1,6 +1,5 @@
-# app/__init__.py
-# Registers all routers
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from app.api.routes.transcripts import router as transcripts_router
 
 app = FastAPI(
@@ -11,10 +10,11 @@ app = FastAPI(
 
 app.include_router(transcripts_router, prefix="/api/v1")
 
-@app.get("/")
-def read_root():
-    return { "message" : "API is running" }
 
 @app.get("/health", tags=["health"])
 async def health_check():
     return {"status": "ok"}
+
+
+# Serve the frontend — must be mounted last so API routes take priority
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
