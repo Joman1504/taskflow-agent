@@ -36,23 +36,53 @@ Rules:
 
 # ── Pipeline orchestration ────────────────────────────────────────────────────
 
-async def run_dual_stream_pipeline(transcript: str) -> DualStreamResponse:
+_RAG_CONTEXT_HEADER = """
+[BACKGROUND CONTEXT — excerpts from previously analysed transcripts that may
+ provide relevant history, recurring participants, or ongoing commitments]
+
+{context}
+
+[END BACKGROUND CONTEXT]
+""".strip()
+
+
+async def run_dual_stream_pipeline(
+    transcript: str,
+    use_rag: bool = False,
+) -> DualStreamResponse:
     """
     Run Stream 1 (narrative notes) and Stream 2 (tactical checklist) in
     parallel against the same transcript, then combine into a DualStreamResponse.
+
+    When *use_rag* is True the system prompts are augmented with relevant
+    context retrieved from the ChromaDB knowledge base before the LLM calls
+    are made.
     """
     import asyncio
+    from app.services.rag_service import retrieve_context
 
+    # ── Optional RAG context injection ───────────────────────────────────────
+    narrative_system = _NARRATIVE_SYSTEM
+    tactical_system  = _TACTICAL_SYSTEM
+
+    if use_rag:
+        context = await retrieve_context(transcript)
+        if context:
+            context_block   = _RAG_CONTEXT_HEADER.format(context=context)
+            narrative_system = f"{_NARRATIVE_SYSTEM}\n\n{context_block}"
+            tactical_system  = f"{_TACTICAL_SYSTEM}\n\n{context_block}"
+
+    # ── Parallel LLM calls ────────────────────────────────────────────────────
     narrative_task = asyncio.create_task(
-        chat_completion(_NARRATIVE_SYSTEM, transcript)
+        chat_completion(narrative_system, transcript)
     )
     tactical_task = asyncio.create_task(
-        chat_completion(_TACTICAL_SYSTEM, transcript)
+        chat_completion(tactical_system, transcript)
     )
 
     narrative_text, tactical_text = await asyncio.gather(narrative_task, tactical_task)
 
-    # Parse Stream 2 JSON safely
+    # ── Parse Stream 2 JSON safely ────────────────────────────────────────────
     try:
         raw_items: list[dict] = json.loads(tactical_text)
         action_items = [ActionItem(**item) for item in raw_items]
