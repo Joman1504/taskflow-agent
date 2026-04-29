@@ -18,6 +18,7 @@
       --text:      #e8ecf0;
       --muted:     #5a6472;
       --danger:    #ff5c5c;
+      --info:      #4a9ef0;
       --radius:    10px;
     }
 
@@ -71,12 +72,11 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: auto 1fr;
-      gap: 0;
+      gap: 1.5rem;
       max-width: 1400px;
       width: 100%;
       margin: 0 auto;
       padding: 2.5rem;
-      gap: 1.5rem;
     }
 
     /* ── Input Panel (spans full width) ── */
@@ -122,6 +122,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
 
     #char-count {
@@ -130,6 +132,9 @@
       color: var(--muted);
     }
 
+    .input-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+    /* ── Buttons ── */
     button#analyze-btn {
       background: var(--accent);
       color: #0d0f12;
@@ -155,7 +160,27 @@
       opacity: 0.6;
     }
 
-    /* Spinner */
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 1.25rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: border-color 0.15s, color 0.15s, transform 0.1s;
+    }
+    .btn-secondary:hover  { border-color: var(--accent); color: var(--accent); }
+    .btn-secondary:active { transform: scale(0.97); }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Spinner ── */
     .spinner {
       width: 14px; height: 14px;
       border: 2px solid #0d0f1240;
@@ -168,7 +193,34 @@
     .loading .btn-text::after { content: 'Analyzing…'; }
     .idle    .btn-text::after { content: 'Analyze'; }
 
+    .spinner-sm {
+      width: 12px; height: 12px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Transcribing status bar ── */
+    .transcribe-bar {
+      grid-column: 1 / -1;
+      background: #0d1a2a;
+      border: 1px solid #1e3a5f;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--info);
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .transcribe-bar.visible { display: flex; }
+    .transcribe-bar .spinner-sm { display: block; border-top-color: var(--info); }
 
     /* ── Output Panels ── */
     .output-panel {
@@ -210,7 +262,6 @@
       overflow-y: auto;
     }
 
-    /* Narrative */
     #narrative-content {
       font-size: 0.875rem;
       line-height: 1.8;
@@ -218,7 +269,7 @@
       white-space: pre-wrap;
     }
 
-    /* Action Items */
+    /* ── Action Items ── */
     .action-item {
       display: grid;
       grid-template-columns: auto 1fr auto;
@@ -261,7 +312,7 @@
       white-space: nowrap;
     }
 
-    /* Empty / Error states */
+    /* ── Empty / Error states ── */
     .empty-state {
       flex: 1;
       display: flex;
@@ -290,79 +341,6 @@
       display: none;
     }
     .error-bar.visible { display: block; }
-
-    /* ── Secondary button (Upload / Download) ── */
-    .btn-secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.65rem 1.25rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: border-color 0.15s, color 0.15s, transform 0.1s;
-    }
-    .btn-secondary:hover  { border-color: var(--accent); color: var(--accent); }
-    .btn-secondary:active { transform: scale(0.97); }
-
-    .input-actions { display: flex; align-items: center; gap: 0.75rem; }
-
-    /* ── RAG Toggle ── */
-    .rag-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.65rem 1rem;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-      user-select: none;
-      white-space: nowrap;
-    }
-
-    .rag-toggle:hover { border-color: var(--accent); color: var(--accent); }
-
-    .rag-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--muted);
-      flex-shrink: 0;
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-
-    .rag-toggle.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(200, 240, 74, 0.06);
-    }
-
-    .rag-toggle.active .rag-dot {
-      background: var(--accent);
-      box-shadow: 0 0 6px var(--accent);
-    }
-
-    .rag-hint {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-      transition: color 0.2s;
-    }
-
-    .rag-hint.active { color: var(--accent-dim); }
 
     /* ── Download bar ── */
     .download-bar {
@@ -401,27 +379,37 @@
   <!-- Input -->
   <div class="input-panel">
     <div class="panel-label">Transcript Input</div>
-    <input type="file" id="file-upload" accept=".txt,.md,.text" style="display:none">
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="text-upload"  accept=".txt,.md,.text" style="display:none">
+    <input type="file" id="audio-upload" accept=".mp3,.mp4,.m4a,.wav,.webm,.ogg,.flac,.mov,.mpeg,.mpga" style="display:none">
+
     <textarea
       id="transcript"
-      placeholder="Paste your meeting or lecture transcript here…"
+      placeholder="Paste your meeting or lecture transcript here, or upload an audio / video file to auto-transcribe…"
       spellcheck="false"
     ></textarea>
+
     <div class="input-footer">
       <span id="char-count">0 characters</span>
       <div class="input-actions">
-        <button class="btn-secondary" onclick="document.getElementById('file-upload').click()">
+
+        <!-- Upload plain text file -->
+        <button class="btn-secondary" onclick="document.getElementById('text-upload').click()" title="Upload a .txt or .md file">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
           </svg>
-          Upload File
+          Upload Text
         </button>
 
-        <!-- RAG toggle -->
-        <button id="rag-toggle" class="rag-toggle" onclick="toggleRag()" title="Use context from previously analysed transcripts">
-          <span class="rag-dot"></span>
-          <span id="rag-label">RAG OFF</span>
+        <!-- Upload audio / video for Whisper transcription -->
+        <button id="audio-btn" class="btn-secondary" onclick="document.getElementById('audio-upload').click()" title="Upload audio or video — Whisper will transcribe it automatically">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+            <path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <span class="spinner-sm" id="audio-spinner"></span>
+          <span id="audio-btn-text">Transcribe Audio</span>
         </button>
 
         <button id="analyze-btn" class="idle" onclick="analyze()">
@@ -430,6 +418,12 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Transcribing status -->
+  <div class="transcribe-bar" id="transcribe-bar">
+    <div class="spinner-sm"></div>
+    <span id="transcribe-msg">Transcribing audio with Whisper…</span>
   </div>
 
   <!-- Error bar -->
@@ -470,7 +464,7 @@
 
   <!-- Download bar -->
   <div class="download-bar" id="download-bar">
-    <span id="download-label">Analysis complete — results ready to export. <span id="elapsed-time" style="font-size:0.7rem; color:var(--muted); margin-left:0.4rem;"></span></span>
+    <span>Analysis complete — results ready to export. <span id="elapsed-time" style="font-size:0.7rem; color:var(--muted); margin-left:0.4rem;"></span></span>
     <button class="btn-secondary" onclick="downloadJSON()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -483,81 +477,82 @@
 </main>
 
 <script>
-  const textarea    = document.getElementById('transcript');
-  const charCount   = document.getElementById('char-count');
-  const btn         = document.getElementById('analyze-btn');
-  const errorBar    = document.getElementById('error-bar');
-  const fileInput   = document.getElementById('file-upload');
-  const downloadBar = document.getElementById('download-bar');
-  const ragToggle   = document.getElementById('rag-toggle');
-  const ragLabel    = document.getElementById('rag-label');
+  const textarea      = document.getElementById('transcript');
+  const charCount     = document.getElementById('char-count');
+  const analyzeBtn    = document.getElementById('analyze-btn');
+  const errorBar      = document.getElementById('error-bar');
+  const textFileInput = document.getElementById('text-upload');
+  const audioInput    = document.getElementById('audio-upload');
+  const downloadBar   = document.getElementById('download-bar');
+  const transcribeBar = document.getElementById('transcribe-bar');
+  const audioBtn      = document.getElementById('audio-btn');
+  const audioBtnText  = document.getElementById('audio-btn-text');
+  const audioSpinner  = document.getElementById('audio-spinner');
 
   let lastResult = null;
-  let useRag     = false;
-  let ragChunks  = 0;  // cached chunk count from last status fetch
 
-  // ── RAG toggle ────────────────────────────────────────────────────────────
-  async function fetchRagStatus() {
-    try {
-      const res = await fetch('/api/v1/transcripts/rag/status');
-      if (res.ok) {
-        const data = await res.json();
-        ragChunks = data.indexed_chunks || 0;
-      }
-    } catch (_) { /* silently ignore */ }
-  }
-
-  function toggleRag() {
-    useRag = !useRag;
-    ragToggle.classList.toggle('active', useRag);
-    if (useRag) {
-      fetchRagStatus().then(() => {
-        ragLabel.textContent = ragChunks > 0
-          ? `RAG ON · ${ragChunks} chunks`
-          : 'RAG ON · empty store';
-      });
-    } else {
-      ragLabel.textContent = 'RAG OFF';
-    }
-  }
-
-  // Live character count
-  textarea.addEventListener('input', () => {
+  // ── Character count ──────────────────────────────────────────────────────────
+  textarea.addEventListener('input', updateCharCount);
+  function updateCharCount() {
     const n = textarea.value.length;
     charCount.textContent = `${n.toLocaleString()} character${n !== 1 ? 's' : ''}`;
-  });
-
-  // File upload handler
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      textarea.value = e.target.result;
-      const n = textarea.value.length;
-      charCount.textContent = `${n.toLocaleString()} character${n !== 1 ? 's' : ''}`;
-      clearError();
-    };
-    reader.onerror = () => showError('Could not read the file.');
-    reader.readAsText(file);
-    fileInput.value = '';
-  });
-
-  function downloadJSON() {
-    if (!lastResult) return;
-    const json = JSON.stringify(lastResult, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'taskflow-results.json';
-    a.click();
-    URL.revokeObjectURL(url);
   }
 
-  function setLoading(on) {
-    btn.disabled = on;
-    btn.className = on ? 'loading' : 'idle';
+  // ── Text file upload ─────────────────────────────────────────────────────────
+  textFileInput.addEventListener('change', () => {
+    const file = textFileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload  = (e) => { textarea.value = e.target.result; updateCharCount(); clearError(); };
+    reader.onerror = () => showError('Could not read the file.');
+    reader.readAsText(file);
+    textFileInput.value = '';
+  });
+
+  // ── Audio / video upload → Whisper ──────────────────────────────────────────
+  audioInput.addEventListener('change', async () => {
+    const file = audioInput.files[0];
+    if (!file) return;
+    audioInput.value = '';
+
+    setAudioLoading(true);
+    clearError();
+
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    try {
+      const res = await fetch('/api/v1/transcripts/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Transcription failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      textarea.value = data.transcript;
+      updateCharCount();
+    } catch (err) {
+      showError(err.message || 'Audio transcription failed.');
+    } finally {
+      setAudioLoading(false);
+    }
+  });
+
+  function setAudioLoading(on) {
+    audioBtn.disabled          = on;
+    audioSpinner.style.display = on ? 'block' : 'none';
+    audioBtnText.textContent   = on ? 'Transcribing…' : 'Transcribe Audio';
+    transcribeBar.classList.toggle('visible', on);
+  }
+
+  // ── Analyze ──────────────────────────────────────────────────────────────────
+  function setAnalyzeLoading(on) {
+    analyzeBtn.disabled  = on;
+    analyzeBtn.className = on ? 'loading' : 'idle';
   }
 
   function showError(msg) {
@@ -570,8 +565,8 @@
   }
 
   function renderNarrative(text) {
-    const el = document.getElementById('narrative-body');
-    el.innerHTML = `<div id="narrative-content">${escapeHtml(text)}</div>`;
+    document.getElementById('narrative-body').innerHTML =
+      `<div id="narrative-content">${escapeHtml(text)}</div>`;
   }
 
   function renderActions(items) {
@@ -590,22 +585,32 @@
   }
 
   function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function downloadJSON() {
+    if (!lastResult) return;
+    const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: 'taskflow-results.json' });
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function analyze() {
     const transcript = textarea.value.trim();
-    if (!transcript) { showError('Please paste a transcript before analyzing.'); return; }
+    if (!transcript) { showError('Please paste a transcript or transcribe an audio file first.'); return; }
 
     clearError();
-    setLoading(true);
+    setAnalyzeLoading(true);
     const t0 = performance.now();
 
     try {
       const res = await fetch('/api/v1/transcripts/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript, use_rag: useRag }),
+        body: JSON.stringify({ transcript }),
       });
 
       if (!res.ok) {
@@ -621,21 +626,10 @@
       document.getElementById('elapsed-time').textContent = `(${elapsed}s)`;
       downloadBar.classList.add('visible');
 
-      // Refresh chunk count after indexing (slight delay for background task)
-      setTimeout(() => {
-        fetchRagStatus().then(() => {
-          if (useRag) {
-            ragLabel.textContent = ragChunks > 0
-              ? `RAG ON · ${ragChunks} chunks`
-              : 'RAG ON · empty store';
-          }
-        });
-      }, 1500);
-
     } catch (err) {
       showError(err.message || 'An unexpected error occurred.');
     } finally {
-      setLoading(false);
+      setAnalyzeLoading(false);
     }
   }
 </script>
