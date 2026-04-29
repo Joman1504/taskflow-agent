@@ -13,7 +13,6 @@ taskflow_agent/
 ├── requirements.txt
 ├── .env.example                # Copy to .env and fill in your keys
 ├── .gitignore
-├── chroma_store/               # Persistent ChromaDB vector store (auto-created)
 ├── app/
 │   ├── __init__.py             # FastAPI app factory & router registration
 │   ├── core/
@@ -23,12 +22,16 @@ taskflow_agent/
 │   ├── services/
 │   │   ├── llm_client.py       # Async OpenAI wrapper
 │   │   ├── pipeline.py         # Dual-stream pipeline orchestration
-│   │   └── rag_service.py      # RAG: chunking, embedding, ChromaDB retrieval
+│   │   └── whisper_service.py  # Audio transcription via OpenAI Whisper API
 │   └── api/
 │       └── routes/
-│           └── transcripts.py  # POST /analyze, GET /rag/status
-└── frontend/
-    └── index.html              # GUI for the agent
+│           └── transcripts.py  # POST /analyze, POST /transcribe
+├── frontend/
+│   └── index.html              # GUI for the agent
+└── transcript examples/        # Sample transcripts for testing
+    ├── ex1.txt
+    ├── ex2.txt
+    └── ex3.txt
 ```
 
 ---
