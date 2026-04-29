@@ -412,7 +412,7 @@
 
   <!-- Download bar -->
   <div class="download-bar" id="download-bar">
-    <span id="download-label">Analysis complete — results ready to export.</span>
+    <span id="download-label">Analysis complete — results ready to export.<span id="elapsed-time" style="font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--muted); margin-left:0.5rem;"></span></span>
     <button class="btn-secondary" onclick="downloadJSON()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -512,6 +512,7 @@
 
     clearError();
     setLoading(true);
+    const t0 = performance.now();
 
     try {
       const res = await fetch('/api/v1/transcripts/analyze', {
@@ -529,6 +530,8 @@
       lastResult = data;
       renderNarrative(data.narrative_notes);
       renderActions(data.action_items);
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+      document.getElementById('elapsed-time').textContent = `(${elapsed}s)`;
       downloadBar.classList.add('visible');
     } catch (err) {
       showError(err.message || 'An unexpected error occurred.');
