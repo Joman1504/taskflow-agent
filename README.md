@@ -25,12 +25,14 @@ taskflow_agent/
 │   ├── services/
 │   │   ├── llm_client.py            # Async OpenAI wrapper
 │   │   ├── pipeline.py              # Dual-stream pipeline orchestration
-│   │   └── mcp_client.py            # MCP client — calls Whisper MCP server
+│   │   ├── agent.py                 # Agentic routing — LLM decides whether to call transcribe_audio
+│   │   ├── mcp_client.py            # MCP client — calls Whisper MCP server
+│   │   └── whisper_service.py       # (retired) superseded by the MCP server
 │   └── api/
 │       └── routes/
-│           └── transcripts.py       # POST /analyze, POST /transcribe
+│           └── transcripts.py       # POST /analyze, POST /process, POST /transcribe
 ├── frontend/
-│   └── index.html                   # GUI for the agent
+│   └── index.html                   # Single-page UI with Raw Text / Text File / Audio tabs
 └── transcript examples/             # Sample transcripts for testing
     ├── ex1.txt
     ├── ex2.txt
@@ -74,7 +76,7 @@ The app runs as two independent processes:
 | Whisper MCP server | `python mcp_servers/whisper/server.py` | 8001 | Exposes `transcribe_audio` tool over SSE |
 | FastAPI app | `python main.py` | 8000 | Serves frontend, handles requests, calls MCP server |
 
-When a `/transcribe` request arrives, the FastAPI app connects to the Whisper MCP server over SSE, sends the audio as a base64-encoded tool call, and receives the transcript text in return.
+**Agentic routing:** when a request arrives at `/process`, `agent.py` makes a single LLM call with the `transcribe_audio` tool definition available. The LLM inspects the input description (text transcript vs. uploaded file name) and decides via `tool_choice="auto"` whether to invoke the tool or pass the text straight through. If the tool is called, `mcp_client.py` connects to the Whisper MCP server over SSE, sends the audio as a base64-encoded tool call, and returns the transcript to the pipeline.
 
 ---
 
@@ -100,9 +102,15 @@ When a `/transcribe` request arrives, the FastAPI app connects to the Whisper MC
 }
 ```
 
+### `POST /api/v1/transcripts/process`
+
+Unified agentic endpoint. Accepts either a plain-text transcript (form field `transcript`) or an audio/video file upload (form field `file`). The LLM routing layer decides whether to invoke the Whisper MCP tool before running the dual-stream pipeline.
+
+**Response:** same shape as `/analyze`.
+
 ### `POST /api/v1/transcripts/transcribe`
 
-Accepts a multipart audio file (mp3, mp4, m4a, wav, webm, ogg, flac, mov — max 25 MB). Delegates to the Whisper MCP server and returns the transcript text.
+Accepts a multipart audio file (mp3, mp4, m4a, wav, webm, ogg, flac, mov — max 25 MB). Delegates directly to the Whisper MCP server and returns the transcript text.
 
 **Response:**
 ```json
