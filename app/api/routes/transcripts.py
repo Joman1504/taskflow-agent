@@ -17,7 +17,8 @@ _ALLOWED_AUDIO_EXTENSIONS = {
 _MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB — Whisper API hard limit
 
 # ── API endpoints ─────────────────────────────────────────────────────────────
-# 1. /api/v1/transcripts/analyze — accepts a raw text transcript, returns narrative + action items.
+# --- DEPRECATED: the /analyze endpoint is now redundant with the more flexible /process endpoint, which can handle both text and file inputs. --- #
+# /api/v1/transcripts/analyze — accepts a raw text transcript, returns narrative + action items.
 @router.post("/analyze", response_model=DualStreamResponse)
 async def analyze_transcript(body: TranscriptRequest) -> DualStreamResponse:
     # Validate that the transcript is not empty or just whitespace
@@ -28,7 +29,7 @@ async def analyze_transcript(body: TranscriptRequest) -> DualStreamResponse:
     return await run_dual_stream_pipeline(transcript=body.transcript)
 
 
-# 2. /api/v1/transcripts/process — unified entry point; accepts either text or file, uses the agentic 
+# /api/v1/transcripts/process — unified entry point; accepts either text or file, uses the agentic 
 # routing layer to decide on transcription, then returns narrative + action items.
 @router.post("/process", response_model=DualStreamResponse)
 async def process(
@@ -75,7 +76,7 @@ async def process(
     return await run_dual_stream_pipeline(resolved)
 
 
-# 3. /api/v1/transcripts/transcribe — accepts an audio/video file, returns the transcript text (calls 
+# /api/v1/transcripts/transcribe — accepts an audio/video file, returns the transcript text (calls 
 # the MCP client directly, bypassing the agent).
 @router.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe(file: UploadFile = File(...)) -> TranscribeResponse:
