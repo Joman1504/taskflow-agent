@@ -714,18 +714,21 @@
     URL.revokeObjectURL(url);
   }
 
+  // Analyze the transcript and display the results.
   async function analyze() {
     clearError();
 
     // ── Validate input for the active tab ──────────────────────────────────────
     let fetchInit, endpoint;
 
+    // User in the "Raw Text" tab: ensure there's text in the textarea, then send it to the analyze endpoint.    
     if (activeTab === 'text') {
       const transcript = textarea.value.trim();
       if (!transcript) {
         showError('Paste a transcript before analyzing.');
         return;
       }
+      // For text input, we can directly call the analyze endpoint since we already have the transcript text.
       endpoint  = '/api/v1/transcripts/analyze';
       fetchInit = {
         method:  'POST',
@@ -733,11 +736,16 @@
         body:    JSON.stringify({ transcript }),
       };
 
+    // User in the "Text File" tab: ensure a file is selected, read its content, then send it to the analyze endpoint.
     } else if (activeTab === 'textfile') {
       if (!pendingTextFile) {
         showError('Select a text file before analyzing.');
         return;
       }
+      /** 
+       *  Since the content of the text file is already read and stored in pendingTextFile.content, we can directly send 
+       *  it to the analyze endpoint.
+       */
       endpoint  = '/api/v1/transcripts/analyze';
       fetchInit = {
         method:  'POST',
@@ -745,12 +753,17 @@
         body:    JSON.stringify({ transcript: pendingTextFile.content }),
       };
 
+    // User in the "Audio / Video" tab: ensure a file is selected, then send it to the transcribe-and-analyze endpoint.
     } else {
       // audio tab
       if (!pendingAudioFile) {
         showError('Select an audio or video file before analyzing.');
         return;
       }
+      /** 
+       *  For audio/video input, we need to send the file to a different endpoint that can handle transcription and analysis. 
+       *  We will use FormData to send the file.
+       */
       endpoint = '/api/v1/transcripts/process';
       const fd = new FormData();
       fd.append('file', pendingAudioFile, pendingAudioFile.name);

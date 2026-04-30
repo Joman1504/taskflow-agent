@@ -1,3 +1,7 @@
+# app/services/pipeline.py
+# Core logic for the dual-stream processing pipeline.
+# Contains the system prompts and the main function that runs both the narrative and tactical streams in parallel.
+
 import asyncio
 import json
 
@@ -17,7 +21,7 @@ identify every firm action item where someone explicitly commits to doing someth
 or is assigned to do something. Ignore suggestions, hypotheticals, and vague statements
 like "we should".
 
-Return ONLY a valid JSON array with this exact structure — no extra text:
+Return ONLY a valid JSON array with this exact structure; no extra text:
 [
     {"who": "<person or role>", "what": "<task description>", "when": "<deadline or null>"},
     ...
@@ -35,11 +39,14 @@ async def run_dual_stream_pipeline(transcript: str) -> DualStreamResponse:
     Run Stream 1 (narrative notes) and Stream 2 (tactical checklist) in
     parallel against the same transcript, then combine into a DualStreamResponse.
     """
+    # Asynchronously run both the narrative and tactical streams using asyncio.gather.
+    # Utilizes the chat_completion helper to send the respective system prompts and the transcript as the user prompt.
     narrative_task = asyncio.create_task(chat_completion(_NARRATIVE_SYSTEM, transcript))
     tactical_task  = asyncio.create_task(chat_completion(_TACTICAL_SYSTEM, transcript))
 
     narrative_text, tactical_text = await asyncio.gather(narrative_task, tactical_task)
 
+    # Parse the tactical stream's JSON output into a list of ActionItem objects.
     try:
         raw_items: list[dict] = json.loads(tactical_text)
         action_items = [ActionItem(**item) for item in raw_items]

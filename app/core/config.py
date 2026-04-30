@@ -1,3 +1,6 @@
+# app/core/config.py
+# Configuration management using Pydantic BaseSettings.
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

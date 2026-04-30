@@ -36,9 +36,9 @@ _TOOLS = [
 # ── Public interface ──────────────────────────────────────────────────────────
 
 async def resolve_transcript(
-    text: str | None = None,
-    file_bytes: bytes | None = None,
-    filename: str | None = None,
+    text: str | None = None,            # Raw transcript text if provided by the user, otherwise None
+    file_bytes: bytes | None = None,    # Raw bytes of the uploaded audio/video file if provided by the user, otherwise None
+    filename: str | None = None,        # Original filename of the uploaded file (used for format detection in transcription) if provided by the user, otherwise None
 ) -> str:
     """
     Ask the LLM whether transcription is needed.
@@ -49,12 +49,16 @@ async def resolve_transcript(
     """
     client = get_client()
 
+    # Construct the user message based on whether we received text or a file. 
+    # This message is what the LLM will use to determine whether to call the transcription tool or not.
     user_msg = (
         f"The user submitted a text transcript ({len(text):,} characters)."
         if text
         else f"The user uploaded a file named '{filename}'."
     )
 
+    # Send the system and user prompts to OpenAI as a single message list, along with the tool definition. 
+    # The LLM will decide whether to call the tool or not based on the content of the user message.
     response = await client.chat.completions.create(
         model=settings.openai_model,
         messages=[
@@ -65,8 +69,10 @@ async def resolve_transcript(
         tool_choice="auto",
     )
 
+    # Check if the LLM decided to call the transcribe_audio tool. If so, delegate to the MCP client to perform transcription.
     if response.choices[0].message.tool_calls:
         # LLM decided this is audio — delegate to the Whisper MCP server
+        # Returns the transcribed text from the audio file
         return await transcribe_via_mcp(file_bytes, filename)
 
     # LLM decided it is already a transcript

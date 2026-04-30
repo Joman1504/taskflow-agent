@@ -55,10 +55,12 @@ async def transcribe_audio(audio_b64: str, filename: str) -> str:
     """
     client = _get_client()
 
+    # Decode the base64-encoded audio back into bytes, wrap it in a BytesIO object, and set the name attribute for format detection by the Whisper API.
     audio_bytes = base64.b64decode(audio_b64)
     audio_file  = io.BytesIO(audio_bytes)
     audio_file.name = filename  # Whisper API uses the name attribute for format detection
 
+    # Call the OpenAI Whisper API to transcribe the audio and return the transcript text.
     response = await client.audio.transcriptions.create(
         model="whisper-1",
         file=audio_file,

@@ -25,8 +25,11 @@ async def transcribe_via_mcp(file_bytes: bytes, filename: str) -> str:
         HTTPException 503 — if the MCP server is not reachable.
         HTTPException 500 — if the server returns an empty response.
     """
+    # Base64-encode the audio bytes for transmission to the MCP server. 
+    # The transcribe_audio tool expects a base64 string since SSE messages are text-based.
     audio_b64 = base64.b64encode(file_bytes).decode("utf-8")
 
+    # Open an SSE session with the MCP server and call the transcribe_audio tool with the base64-encoded audio and filename.
     try:
         async with sse_client(url=MCP_WHISPER_URL) as (read, write):
             async with ClientSession(read, write) as session:
