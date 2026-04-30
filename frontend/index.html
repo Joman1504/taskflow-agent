@@ -342,6 +342,77 @@
     }
     .error-bar.visible { display: block; }
 
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .tab-btn:hover  { border-color: var(--text); color: var(--text); }
+    .tab-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,240,74,0.06); }
+
+    .tab-pane { display: none; flex-direction: column; gap: 0.75rem; }
+    .tab-pane.active { display: flex; }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      min-height: 160px;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 2.5rem 2rem;
+      cursor: pointer;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      text-align: center;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .upload-zone:hover { border-color: var(--accent); color: var(--text); }
+    .upload-zone svg { opacity: 0.35; margin-bottom: 0.25rem; transition: opacity 0.2s; }
+    .upload-zone:hover svg { opacity: 0.65; }
+    .upload-hint { font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* ── Selected file display ── */
+    .file-selected {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+    .file-selected.visible { display: flex; }
+    .file-selected span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-clear-btn {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0; flex-shrink: 0;
+    }
+    .file-clear-btn:hover { color: var(--danger); }
+
     /* ── Download bar ── */
     .download-bar {
       grid-column: 1 / -1;
@@ -378,45 +449,92 @@
 
   <!-- Input -->
   <div class="input-panel">
-    <div class="panel-label">Transcript Input</div>
+
+    <!-- Panel header: label + tab bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+      <div class="panel-label">Transcript Input</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-text" onclick="switchTab('text')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/>
+          </svg>
+          Raw Text
+        </button>
+        <button class="tab-btn" id="tab-textfile" onclick="switchTab('textfile')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Text File
+        </button>
+        <button class="tab-btn" id="tab-audio" onclick="switchTab('audio')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+            <path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          Audio / Video
+        </button>
+      </div>
+    </div>
 
     <!-- Hidden file inputs -->
     <input type="file" id="text-upload"  accept=".txt,.md,.text" style="display:none">
     <input type="file" id="audio-upload" accept=".mp3,.mp4,.m4a,.wav,.webm,.ogg,.flac,.mov,.mpeg,.mpga" style="display:none">
 
-    <textarea
-      id="transcript"
-      placeholder="Paste your meeting or lecture transcript here, or upload an audio / video file to auto-transcribe…"
-      spellcheck="false"
-    ></textarea>
+    <!-- Pane: Raw Text -->
+    <div class="tab-pane active" id="pane-text">
+      <textarea
+        id="transcript"
+        placeholder="Paste your meeting or lecture transcript here…"
+        spellcheck="false"
+      ></textarea>
+      <span id="char-count" style="font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--muted);">0 characters</span>
+    </div>
 
-    <div class="input-footer">
-      <span id="char-count">0 characters</span>
-      <div class="input-actions">
-
-        <!-- Upload plain text file -->
-        <button class="btn-secondary" onclick="document.getElementById('text-upload').click()" title="Upload a .txt or .md file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-          </svg>
-          Upload Text
-        </button>
-
-        <!-- Upload audio / video for Whisper transcription -->
-        <button id="audio-btn" class="btn-secondary" onclick="document.getElementById('audio-upload').click()" title="Upload audio or video — Whisper will transcribe it automatically">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
-            <path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-          <span class="spinner-sm" id="audio-spinner"></span>
-          <span id="audio-btn-text">Transcribe Audio</span>
-        </button>
-
-        <button id="analyze-btn" class="idle" onclick="analyze()">
-          <div class="spinner"></div>
-          <span class="btn-text"></span>
-        </button>
+    <!-- Pane: Text File -->
+    <div class="tab-pane" id="pane-textfile">
+      <div class="upload-zone" onclick="document.getElementById('text-upload').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <span>Click to select a text file</span>
+        <span class="upload-hint">.txt · .md · .text</span>
       </div>
+      <div class="file-selected" id="textfile-selected">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span id="textfile-name"></span>
+        <button class="file-clear-btn" onclick="clearTextFile()" title="Remove file">×</button>
+      </div>
+    </div>
+
+    <!-- Pane: Audio / Video -->
+    <div class="tab-pane" id="pane-audio">
+      <div class="upload-zone" onclick="document.getElementById('audio-upload').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+          <path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        <span>Click to select an audio or video file</span>
+        <span class="upload-hint">.mp3 · .mp4 · .m4a · .wav · .webm · .ogg · .flac · .mov</span>
+      </div>
+      <div class="file-selected" id="audiofile-selected">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+          <path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        <span id="audiofile-name"></span>
+        <button class="file-clear-btn" onclick="clearAudio()" title="Remove file">×</button>
+      </div>
+    </div>
+
+    <!-- Shared footer -->
+    <div class="input-footer" style="justify-content:flex-end;">
+      <button id="analyze-btn" class="idle" onclick="analyze()">
+        <div class="spinner"></div>
+        <span class="btn-text"></span>
+      </button>
     </div>
   </div>
 
@@ -477,21 +595,31 @@
 </main>
 
 <script>
-  const textarea      = document.getElementById('transcript');
-  const charCount     = document.getElementById('char-count');
-  const analyzeBtn    = document.getElementById('analyze-btn');
-  const errorBar      = document.getElementById('error-bar');
-  const textFileInput = document.getElementById('text-upload');
-  const audioInput    = document.getElementById('audio-upload');
-  const downloadBar   = document.getElementById('download-bar');
-  const transcribeBar = document.getElementById('transcribe-bar');
-  const audioBtn      = document.getElementById('audio-btn');
-  const audioBtnText  = document.getElementById('audio-btn-text');
-  const audioSpinner  = document.getElementById('audio-spinner');
+  const textarea       = document.getElementById('transcript');
+  const charCount      = document.getElementById('char-count');
+  const analyzeBtn     = document.getElementById('analyze-btn');
+  const errorBar       = document.getElementById('error-bar');
+  const textFileInput  = document.getElementById('text-upload');
+  const audioInput     = document.getElementById('audio-upload');
+  const downloadBar    = document.getElementById('download-bar');
+  const transcribeBar  = document.getElementById('transcribe-bar');
 
-  let lastResult = null;
+  let lastResult      = null;
+  let activeTab       = 'text';      // 'text' | 'textfile' | 'audio'
+  let pendingTextFile = null;        // { file, content } for text-file tab
+  let pendingAudioFile = null;       // File for audio tab
 
-  // ── Character count ──────────────────────────────────────────────────────────
+  // ── Tab switching ────────────────────────────────────────────────────────────
+  function switchTab(tab) {
+    activeTab = tab;
+    ['text', 'textfile', 'audio'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+      document.getElementById(`pane-${t}`).classList.toggle('active', t === tab);
+    });
+    clearError();
+  }
+
+  // ── Character count (raw-text pane only) ─────────────────────────────────────
   textarea.addEventListener('input', updateCharCount);
   function updateCharCount() {
     const n = textarea.value.length;
@@ -501,52 +629,40 @@
   // ── Text file upload ─────────────────────────────────────────────────────────
   textFileInput.addEventListener('change', () => {
     const file = textFileInput.files[0];
+    textFileInput.value = '';
     if (!file) return;
     const reader = new FileReader();
-    reader.onload  = (e) => { textarea.value = e.target.result; updateCharCount(); clearError(); };
+    reader.onload = (e) => {
+      pendingTextFile = { file, content: e.target.result };
+      document.getElementById('textfile-name').textContent = file.name;
+      document.getElementById('textfile-selected').classList.add('visible');
+      clearError();
+    };
     reader.onerror = () => showError('Could not read the file.');
     reader.readAsText(file);
-    textFileInput.value = '';
   });
 
-  // ── Audio / video upload → Whisper ──────────────────────────────────────────
-  audioInput.addEventListener('change', async () => {
+  function clearTextFile() {
+    pendingTextFile = null;
+    document.getElementById('textfile-name').textContent = '';
+    document.getElementById('textfile-selected').classList.remove('visible');
+  }
+
+  // ── Audio / video upload ─────────────────────────────────────────────────────
+  audioInput.addEventListener('change', () => {
     const file = audioInput.files[0];
-    if (!file) return;
     audioInput.value = '';
-
-    setAudioLoading(true);
+    if (!file) return;
+    pendingAudioFile = file;
+    document.getElementById('audiofile-name').textContent = file.name;
+    document.getElementById('audiofile-selected').classList.add('visible');
     clearError();
-
-    const formData = new FormData();
-    formData.append('file', file, file.name);
-
-    try {
-      const res = await fetch('/api/v1/transcripts/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Transcription failed (${res.status})`);
-      }
-
-      const data = await res.json();
-      textarea.value = data.transcript;
-      updateCharCount();
-    } catch (err) {
-      showError(err.message || 'Audio transcription failed.');
-    } finally {
-      setAudioLoading(false);
-    }
   });
 
-  function setAudioLoading(on) {
-    audioBtn.disabled          = on;
-    audioSpinner.style.display = on ? 'block' : 'none';
-    audioBtnText.textContent   = on ? 'Transcribing…' : 'Transcribe Audio';
-    transcribeBar.classList.toggle('visible', on);
+  function clearAudio() {
+    pendingAudioFile = null;
+    document.getElementById('audiofile-name').textContent = '';
+    document.getElementById('audiofile-selected').classList.remove('visible');
   }
 
   // ── Analyze ──────────────────────────────────────────────────────────────────
@@ -598,20 +714,51 @@
     URL.revokeObjectURL(url);
   }
 
+  // Analyze the transcript and display the results.
   async function analyze() {
-    const transcript = textarea.value.trim();
-    if (!transcript) { showError('Please paste a transcript or transcribe an audio file first.'); return; }
-
     clearError();
+
+    // ── Validate input for the active tab ──────────────────────────────────────
+    let fetchInit, endpoint;
+
+    // All three tabs route through the unified /process endpoint.
+    endpoint = '/api/v1/transcripts/process';
+
+    if (activeTab === 'text') {
+      const transcript = textarea.value.trim();
+      if (!transcript) {
+        showError('Paste a transcript before analyzing.');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('transcript', transcript);
+      fetchInit = { method: 'POST', body: fd };
+
+    } else if (activeTab === 'textfile') {
+      if (!pendingTextFile) {
+        showError('Select a text file before analyzing.');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('transcript', pendingTextFile.content);
+      fetchInit = { method: 'POST', body: fd };
+
+    } else {
+      // audio tab
+      if (!pendingAudioFile) {
+        showError('Select an audio or video file before analyzing.');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', pendingAudioFile, pendingAudioFile.name);
+      fetchInit = { method: 'POST', body: fd };
+    }
+
     setAnalyzeLoading(true);
     const t0 = performance.now();
 
     try {
-      const res = await fetch('/api/v1/transcripts/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript }),
-      });
+      const res = await fetch(endpoint, fetchInit);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
